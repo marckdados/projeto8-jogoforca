@@ -1,25 +1,156 @@
-import imagem from "./assets/forca0.png";
+import imagem0 from "./assets/forca0.png";
+import imagem1 from "./assets/forca1.png";
+import imagem2 from "./assets/forca2.png";
+import imagem3 from "./assets/forca3.png";
+import imagem4 from "./assets/forca4.png";
+import imagem5 from "./assets/forca5.png";
+import imagem6 from "./assets/forca6.png";
+
 import styled from "styled-components";
 import array from "./alfabeto";
+import palavras from "./palavras";
+import { useState } from "react";
+
 export default function App() {
+  const arrayImagem = [
+    imagem0,
+    imagem1,
+    imagem2,
+    imagem3,
+    imagem4,
+    imagem5,
+    imagem6,
+  ];
+  const [palavra, setPalavra] = useState("");
+  const [preecheForca, setPreencheForca] = useState([]);
+  const [acertos, setAcertos] = useState(0);
+  const [erros, setErros] = useState(0);
+  const [printaImagem, setPrintaImagem] = useState(arrayImagem[0]);
+  const [inputPalavra, setInputPalavra] = useState("");
+  const [desabilitado, setDesabilitado] = useState(true);
+  const [corForca, setCorForca] = useState("");
+
+  function escolherPalavra() {
+    //let contaErro = erros;
+    palavras.sort(comparador);
+    const sorteandoPalavra = palavras[0];
+    let habilitar = !true;
+    setCorForca("#000000");
+    setDesabilitado(habilitar);
+    setPalavra(sorteandoPalavra);
+    setPreencheForca([]);
+    if (erros !== 0) {
+      setErros(0);
+    }
+    if (acertos !== 0) {
+      setAcertos(0);
+    }
+    const arrayDeTracos = [];
+    for (let i = 0; i <= sorteandoPalavra.length - 1; i++) {
+      arrayDeTracos.push("_ ");
+    }
+    setPreencheForca(arrayDeTracos);
+    //console.log(arrayDeTracos);
+  }
+  function comparador() {
+    return Math.random() - 0.5;
+  }
+
+  function verificaBotao(letra) {
+    const novoArray = [...preecheForca];
+    let contador = acertos;
+    let contadorErro = erros;
+    for (let i = 0; i <= palavra.length; i++) {
+      if (letra === palavra[i]) {
+        novoArray[i] = letra;
+      }
+    }
+    if (!novoArray.includes(letra)) {
+      contadorErro++;
+    } else {
+      contador++;
+    }
+    setPrintaImagem(arrayImagem[contadorErro]);
+    setAcertos(contador);
+    setErros(contadorErro);
+    setPreencheForca(novoArray);
+
+    finalizandoJogo(contador, contadorErro);
+  }
+
+  function finalizandoJogo(acertos, erros) {
+    if (acertos === palavra.length) {
+      let novaCor = "#5EAF61";
+      setCorForca(novaCor);
+      setDesabilitado(true);
+    }
+    if (erros === 6) {
+      let novaCor = "#E74F2E";
+      setCorForca(novaCor);
+      setDesabilitado(true);
+    }
+    //console.log(acertos, palavra.length, erros);
+  }
+
+  function chutarPalavra(chute) {
+    let tamanhoPalavra = palavra.length;
+    let maximoErro = 0;
+    if (chute === palavra) {
+      let palavraCerta = palavra;
+      setAcertos(tamanhoPalavra);
+      setPreencheForca(palavraCerta);
+      let novaCor = "green";
+      setCorForca(novaCor);
+    } else {
+      let palavraCerta = palavra;
+      maximoErro = 6;
+      setErros(maximoErro);
+      setPreencheForca(palavraCerta);
+      let novaCor = "red";
+      setCorForca(novaCor);
+    }
+    setDesabilitado(true);
+    console.log(tamanhoPalavra, maximoErro);
+    finalizandoJogo(tamanhoPalavra, maximoErro);
+    setInputPalavra("");
+  }
+  console.log(acertos, "acertos");
+  console.log(erros, "erro");
+  console.log(palavra, "palavra");
   return (
     <Container>
       <Topo>
-        <img src={imagem} alt="Imagem" />
-        <Palavra>
-          <button>Escolher Palavra</button>
-          <span>ABCDERFGHI</span>
+        <img src={printaImagem} alt="Imagem" />
+        <Palavra cor={corForca}>
+          <button onClick={escolherPalavra}>Escolher Palavra</button>
+          <span>{preecheForca}</span>
         </Palavra>
       </Topo>
       <Botoes>
         {array.map((letra, index) => (
-          <div key={index}>{letra.toUpperCase()}</div>
+          <button
+            disabled={desabilitado}
+            onClick={() => {
+              verificaBotao(letra);
+            }}
+            key={index}
+          >
+            {letra.toUpperCase()}
+          </button>
         ))}
       </Botoes>
       <CaixaInput>
         <span>Já sei a palavra !</span>
-        <input placeholder="" />
-        <button>Chutar</button>
+        <input
+          value={inputPalavra}
+          onChange={(e) => setInputPalavra(e.target.value)}
+        />
+        <button
+          disabled={desabilitado}
+          onClick={() => chutarPalavra(inputPalavra)}
+        >
+          Chutar
+        </button>
       </CaixaInput>
     </Container>
   );
@@ -59,6 +190,11 @@ const Palavra = styled.div`
     font-size: 1.2em;
     color: #ffffff;
   }
+  span {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: ${(props) => props.cor};
+  }
 `;
 
 const Botoes = styled.div`
@@ -67,7 +203,7 @@ const Botoes = styled.div`
   flex-wrap: wrap;
   margin-top: 50px;
 
-  div {
+  button {
     width: 50px;
     height: 50px;
     display: flex;
@@ -83,6 +219,12 @@ const Botoes = styled.div`
 
     &:hover {
       background-color: #608096;
+    }
+
+    &:disabled {
+      color: #959a9b;
+      background-color: #9faab5;
+      border: 1px solid #959a9b;
     }
   }
 `;
@@ -108,5 +250,11 @@ const CaixaInput = styled.div`
     border-radius: 6px;
     border: 1px solid #93b8d1;
     height: 40px;
+
+    &:disabled {
+      color: #959a9b;
+      background-color: #9faab5;
+      border: 1px solid #959a9b;
+    }
   }
 `;
