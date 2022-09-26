@@ -30,13 +30,23 @@ export default function App() {
   const [desabilitado, setDesabilitado] = useState(true);
   const [corForca, setCorForca] = useState("");
 
+  function habilitarBotoes() {
+    array.map((botao) => (botao.isDisabled = false));
+    setDesabilitado(false);
+  }
+  function desabilitarBotoes() {
+    array.map((botao) => (botao.isDisabled = true));
+    setDesabilitado(true);
+  }
+
   function escolherPalavra() {
+    habilitarBotoes();
     //let contaErro = erros;
     palavras.sort(comparador);
     const sorteandoPalavra = palavras[0];
-    let habilitar = !true;
+
     setCorForca("#000000");
-    setDesabilitado(habilitar);
+
     setPalavra(sorteandoPalavra);
     setPreencheForca([]);
     if (erros !== 0) {
@@ -50,7 +60,6 @@ export default function App() {
       arrayDeTracos.push("_ ");
     }
     setPreencheForca(arrayDeTracos);
-    //console.log(arrayDeTracos);
   }
   function comparador() {
     return Math.random() - 0.5;
@@ -82,14 +91,13 @@ export default function App() {
     if (acertos === palavra.length) {
       let novaCor = "#5EAF61";
       setCorForca(novaCor);
-      setDesabilitado(true);
+      desabilitarBotoes();
     }
     if (erros === 6) {
       let novaCor = "#E74F2E";
       setCorForca(novaCor);
-      setDesabilitado(true);
+      desabilitarBotoes();
     }
-    //console.log(acertos, palavra.length, erros);
   }
 
   function chutarPalavra(chute) {
@@ -108,44 +116,49 @@ export default function App() {
       setPreencheForca(palavraCerta);
       let novaCor = "red";
       setCorForca(novaCor);
+      setPrintaImagem(arrayImagem[maximoErro]);
     }
-    setDesabilitado(true);
-    console.log(tamanhoPalavra, maximoErro);
+    desabilitarBotoes();
+
     finalizandoJogo(tamanhoPalavra, maximoErro);
     setInputPalavra("");
   }
-  console.log(acertos, "acertos");
-  console.log(erros, "erro");
-  console.log(palavra, "palavra");
+
   return (
     <Container>
       <Topo>
-        <img src={printaImagem} alt="Imagem" />
+        <img data-identifier="game-image" src={printaImagem} alt="Imagem" />
         <Palavra cor={corForca}>
-          <button onClick={escolherPalavra}>Escolher Palavra</button>
-          <span>{preecheForca}</span>
+          <button data-identifier="choose-word" onClick={escolherPalavra}>
+            Escolher Palavra
+          </button>
+          <span data-identifier="word">{preecheForca}</span>
         </Palavra>
       </Topo>
       <Botoes>
         {array.map((letra, index) => (
           <button
-            disabled={desabilitado}
+            data-identifier="type-guess"
+            disabled={letra.isDisabled}
             onClick={() => {
-              verificaBotao(letra);
+              verificaBotao(letra.letra);
+              letra.isDisabled = true;
             }}
             key={index}
           >
-            {letra.toUpperCase()}
+            {letra.letra.toUpperCase()}
           </button>
         ))}
       </Botoes>
       <CaixaInput>
-        <span>Já sei a palavra !</span>
+        <span data-identifier="letter">Já sei a palavra !</span>
         <input
           value={inputPalavra}
+          disabled={desabilitado}
           onChange={(e) => setInputPalavra(e.target.value)}
         />
         <button
+          data-identifier="guess-button"
           disabled={desabilitado}
           onClick={() => chutarPalavra(inputPalavra)}
         >
